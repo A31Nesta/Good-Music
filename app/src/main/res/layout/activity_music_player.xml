@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <SeekBar
+        android:id="@+id/seekBar"
+        android:layout_width="0dp"
+        android:layout_height="20dp"
+        android:layout_marginBottom="200dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <ImageButton
+        android:id="@+id/PauseButton"
+        android:layout_width="79dp"
+        android:layout_height="82dp"
+        android:layout_marginStart="178dp"
+        android:layout_marginEnd="178dp"
+        android:layout_marginBottom="90dp"
+        android:contentDescription="pause button"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:srcCompat="@android:drawable/ic_media_pause" />
+
+    <ImageButton
+        android:id="@+id/NextSong"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="85dp"
+        android:layout_marginBottom="105dp"
+        android:contentDescription="next song button"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:srcCompat="@android:drawable/ic_media_next" />
+
+    <ImageButton
+        android:id="@+id/PreviousSong"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="85dp"
+        android:layout_marginBottom="105dp"
+        android:contentDescription="previous song button"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:srcCompat="@android:drawable/ic_media_previous" />
+
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="50dp"
+        android:layout_marginTop="50dp"
+        android:layout_marginEnd="50dp"
+        android:layout_marginBottom="150dp"
+        app:layout_constraintBottom_toTopOf="@+id/seekBar"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/ic_launcher_background" />
+
+    <TextView
+        android:id="@+id/musicText"
+        android:layout_width="304dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="90dp"
+        android:layout_marginBottom="25dp"
+        android:text="Current munsic playing"
+        app:layout_constraintBottom_toTopOf="@+id/seekBar"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/imageView"
+        app:layout_constraintVertical_bias="1.0" />
+</androidx.constraintlayout.widget.ConstraintLayout>
