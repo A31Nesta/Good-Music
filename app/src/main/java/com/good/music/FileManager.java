@@ -226,8 +226,8 @@ public class FileManager {
                         songs.add(song);
                         songIDs.add(data[0]);
                     } else {
-                        Log.e("SONG LIST", "IGNORED SONG " + data[1] + " AS IT DOESN'T EXIST");
-                        trashInSongTxt.add(data[1]);
+                        Log.e("SONG LIST", "IGNORED SONG " + data[0] + " AS IT DOESN'T EXIST");
+                        trashInSongTxt.add(data[0]);
                     }
                 }
             }
@@ -261,12 +261,12 @@ public class FileManager {
                 // trim newline when comparing with lineToRemove
                 String trimmedLine = currentLine.trim();
 
-                if (counter < 5) {
+                if (counter < 4) {
                     counter++;
                     continue;
                 }
 
-                if (trashInSongTxt.contains(trimmedLine)) {
+                else if (trashInSongTxt.contains(trimmedLine)) {
                     counter = 0;
                     continue;
                 }
