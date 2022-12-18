@@ -6,8 +6,10 @@ import android.util.Log;
 import android.widget.Toast;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -56,7 +58,8 @@ public class FileManager {
             //Reading data line by line and storing it into the stringbuffer
 
             while ((inputString = inputReader.readLine()) != null) {
-                folders.add(inputString);
+                if (new File(inputString).exists()) folders.add(inputString);
+                else { Log.e(null, "Invalid folder name"); }
                 stringBuffer.append(inputString + "\n");
             }
 
@@ -83,6 +86,7 @@ public class FileManager {
 
     // ------------------
     public static ArrayList<Song> songs = new ArrayList<>();
+    public static ArrayList<String> songIDs = new ArrayList<>();
 
     // Read folder and put contents in Song List
     private static void GetSongListFromFolder(String startPoint) {
@@ -138,7 +142,65 @@ public class FileManager {
             e.printStackTrace();
         }
     }
+    private static void LightScan(String startPoint) {
+        FileWriter songListFile = CreateFile("/storage/emulated/0/GoodMusic/SongInfo.txt", true);
 
+        File folder = new File(startPoint);
+        File[] filesInFolder = folder.listFiles(); // This returns all the folders and files in your path
+        for (File file : filesInFolder) { //For each of the entries do:
+            if (!file.isDirectory()) { //check that it's not a dir
+                String filename = file.getName();
+                if (
+                        filename.endsWith(".mp3") ||
+                        filename.endsWith(".wav") ||
+                        filename.endsWith(".flac") ||
+                        filename.endsWith(".ogg")
+                ) {
+                    String id = filename.substring(0, filename.lastIndexOf('.'));
+
+                    // ONLY DO STUFF IF THE FILES ARE NEW
+                    if (!songIDs.contains(id)) {
+                        Log.i("NEW SONG", "FOUND: " + id);
+
+                        MediaMetadataRetriever mmr = new MediaMetadataRetriever();
+                        try {
+                            mmr.setDataSource(startPoint + "/" + filename);
+                        } catch (Exception e) {
+                            Log.i("IGNORED SONG", startPoint + "/" + filename);
+                        }
+                        String  title = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE),
+                                album = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ALBUM),
+                                artist = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST)
+                        ;
+
+                        try {
+                            songListFile.append(
+                                    id + '\n' +
+                                    startPoint + '/' + filename + '\n' +
+                                    (title!=null ? title : id) + '\n' +
+                                    (album!=null ? album : "Unknown") + '\n' +
+                                    (artist!=null ? artist : "Unknown") + '\n'
+                            );
+                            songListFile.flush();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            }
+            else {
+                LightScan(file.getAbsolutePath());
+            }
+        }
+
+        try {
+            songListFile.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static ArrayList<String> trashInSongTxt = new ArrayList<>();
     private static void GetSongListFromFile() {
         String[] data = new String[5];
         try {
@@ -152,20 +214,71 @@ public class FileManager {
                 data[counter%5] = inputString;
                 counter++;
                 if (counter%5 == 0) {
-                    Song song = new Song(
-                            songs.size(),
-                            data[0],
-                            data[1],
-                            data[2],
-                            data[3],
-                            data[4]
-                    );
-                    songs.add(song);
+                    if (new File(data[1]).exists()) {
+                        Song song = new Song(
+                                songs.size(),
+                                data[0],
+                                data[1],
+                                data[2],
+                                data[3],
+                                data[4]
+                        );
+                        songs.add(song);
+                        songIDs.add(data[0]);
+                    } else {
+                        Log.e("SONG LIST", "IGNORED SONG " + data[1] + " AS IT DOESN'T EXIST");
+                        trashInSongTxt.add(data[1]);
+                    }
                 }
             }
 
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    private static void DeleteTrash() {
+        File inputFile = new File("/storage/emulated/0/GoodMusic/SongInfo.txt");
+        File tempFile = new File("/storage/emulated/0/GoodMusic/SongInfoTMP.txt");
+
+        BufferedReader reader;
+        BufferedWriter writer;
+
+        try {
+            reader = new BufferedReader(new FileReader(inputFile));
+            writer = new BufferedWriter(new FileWriter(tempFile));
+        } catch (Exception e) {
+            Log.e("SONG LOADING", "COULDN'T TAKE OUT THE TRASH BECAUSE OF THIS FUCKER:");
+            e.printStackTrace();
+            return;
+        }
+
+        String currentLine;
+
+        try {
+            int counter = 6;
+            while ((currentLine = reader.readLine()) != null) {
+                // trim newline when comparing with lineToRemove
+                String trimmedLine = currentLine.trim();
+
+                if (counter < 5) {
+                    counter++;
+                    continue;
+                }
+
+                if (trashInSongTxt.contains(trimmedLine)) {
+                    counter = 0;
+                    continue;
+                }
+                writer.write(currentLine + System.getProperty("line.separator"));
+            }
+            writer.close();
+            reader.close();
+            tempFile.renameTo(inputFile);
+
+            Log.i(null, "Trash eliminated");
+        } catch (Exception e) {
+            Log.e(null, "DIE");
         }
     }
 
@@ -181,5 +294,13 @@ public class FileManager {
         }
 
         GetSongListFromFile();
+
+        DeleteTrash();
+
+        // Light Scan. Check only for new files
+        Log.w(null, "PERFORMING LIGHT SCAN");
+        for (int i = 0; i < folders.size(); i++) {
+            LightScan(folders.get(i));
+        }
     }
 }
